@@ -1,15 +1,15 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 '''
-FIFO (First In First Out) caching
+LIFO (Last In First Out) caching
 '''
 
 
 from base_caching import BaseCaching
 
 
-class FIFOCache(BaseCaching):
+class LIFOCache(BaseCaching):
     '''
-    FIFOCache class using FIFO caching and inherits from BaseCaching
+    LIFOCache class using LIFO caching and inherits from BaseCaching
     '''
 
     def __init__(self):
@@ -32,19 +32,17 @@ class FIFOCache(BaseCaching):
         if key is None or item is None:
             return
 
-        if key not in self.stack:
-            self.stack.append(key)
-        else:
-            self.reorder(key)
-
         self.cache_data[key] = item
 
         if len(self.cache_data) > BaseCaching.MAX_ITEMS:
-            to_discard = self.stack[0]
-            if to_discard:
-                self.stack.remove(to_discard)
-                del self.cache_data[to_discard]
-                print("DISCARD: {}".format(to_discard))
+            to_discard = self.stack.pop()
+            del self.cache_data[to_discard]
+            print("DISCARD: {}".format(to_discard))
+
+        if key not in self.stack:
+            self.stack.append(key)
+        else:
+            self.reorder(key=key)
 
     def get(self, key):
         '''
@@ -55,17 +53,20 @@ class FIFOCache(BaseCaching):
 
         Return: Valued represented by key
         '''
-        return self.cache_data.get(key, None)
+        if key is None or key not in self.cache_data.keys():
+            return None
+
+        return self.cache_data.get(key)
 
     def reorder(self, key):
-        """
+        '''
         Assist function to move elements to end of list
 
         Args:
             key: Key to determine value to move
 
         Return: Reorder List
-        """
+        '''
         if self.stack[-1] != key:
             self.stack.remove(key)
             self.stack.append(key)
